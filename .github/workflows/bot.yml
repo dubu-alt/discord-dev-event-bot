@@ -23,8 +23,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Python Setup
         uses: actions/setup-python@v5
@@ -52,6 +50,4 @@ jobs:
 
           git commit -m "update cache"
 
-          git pull --rebase origin main
-
-          git push origin main
+          git push --force-with-lease
