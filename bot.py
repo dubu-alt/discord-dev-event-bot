@@ -1,11 +1,20 @@
 import requests
 from bs4 import BeautifulSoup
 import os
+import json
 from datetime import datetime
 
-WEBHOOK_URL = os.environ["DISCORD_WEBHOOK_URL"]
+WEBHOOK_URL = os.environ["https://discord.com/api/webhooks/1504483133092008017/s6yQTvB7lLVOPcT3zFafUJ2hgkVLUDVI6tf8U4cetD_AFAa48z3q_BzFa9j5fidRvrcY"]
 
 BASE_URL = "https://dev-event.vercel.app/events"
+
+CACHE_FILE = "events_cache.json"
+
+if os.path.exists(CACHE_FILE):
+    with open(CACHE_FILE, "r", encoding="utf-8") as f:
+        sent_events = json.load(f)
+else:
+    sent_events = []
 
 headers = {
     "User-Agent": "Mozilla/5.0"
@@ -13,15 +22,9 @@ headers = {
 
 response = requests.get(BASE_URL, headers=headers)
 
-if response.status_code != 200:
-    print("사이트 요청 실패")
-    exit()
-
 soup = BeautifulSoup(response.text, "html.parser")
 
 cards = soup.select("a")
-
-sent = set()
 
 for card in cards:
 
@@ -36,12 +39,7 @@ for card in cards:
 
     full_link = f"https://dev-event.vercel.app{href}"
 
-    if full_link in sent:
-        continue
-
-    sent.add(full_link)
-
-    if len(text) < 5:
+    if full_link in sent_events:
         continue
 
     embed = {
@@ -59,6 +57,9 @@ for card in cards:
         "embeds": [embed]
     }
 
-    r = requests.post(WEBHOOK_URL, json=payload)
+    requests.post(WEBHOOK_URL, json=payload)
 
-    print(text, r.status_code)
+    sent_events.append(full_link)
+
+with open(CACHE_FILE, "w", encoding="utf-8") as f:
+    json.dump(sent_events, f, ensure_ascii=False, indent=2)
