@@ -1,4 +1,4 @@
-name: Dev-Event Bot
+name: Dev-Event Bot (Git Cache)
 
 on:
   schedule:
@@ -26,23 +26,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       
-      - name: Download previous cache
-        uses: actions/download-artifact@v4
-        with:
-          name: events_cache
-          path: .
-        continue-on-error: true
-      
       - name: Run Dev-Event Bot
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           python dev_event_bot.py
       
-      - name: Upload cache
+      - name: Commit and push cache
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: events_cache
-          path: events_cache.json
-          retention-days: 30
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add events_cache.json
+          git commit -m "Update events cache" || echo "No changes to commit"
+          git push
+        continue-on-error: true
