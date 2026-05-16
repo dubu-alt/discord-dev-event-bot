@@ -100,8 +100,8 @@ class MarkdownParser:
         while i < len(lines):
             line = lines[i]
             
-            # 월별 섹션 헤더 파싱
-            month_match = re.match(r'##\s+`(\d+년\s+\d+월)`', line)
+            # 월별 섹션 헤더 파싱 (백틱 있음/없음 모두 지원)
+            month_match = re.match(r'##\s+`?(\d+년\s+\d+월)`?', line)
             if month_match:
                 current_month = month_match.group(1)
                 i += 1
